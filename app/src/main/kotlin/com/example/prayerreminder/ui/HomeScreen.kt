@@ -18,9 +18,12 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.prayerreminder.alarm.NotificationHelper
 import com.example.prayerreminder.alarm.PrayerAlarmPlanner
 import com.example.prayerreminder.alarm.AlarmPermissionHelper
+import com.example.prayerreminder.domain.HijriDate
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onOpenSettings: () -> Unit
+) {
 
     var prayers by remember {
         mutableStateOf<List<Prayer>>(emptyList())
@@ -43,13 +46,17 @@ fun HomeScreen() {
     var alarmStatus by remember {
         mutableStateOf("Alarms not scheduled yet")
     }
+    var hijriDate by remember {
+        mutableStateOf<HijriDate?>(null)
+    }
 
     fun refreshPrayerTimes() {
         refreshScope.launch {
             loading = true
             error = null
 
-            try {prayers = PrayerRepository.getTodayPrayerTimes()
+            try {
+                prayers = PrayerRepository.getTodayPrayerTimes()
 
                 val scheduled = PrayerAlarmPlanner.scheduleToday(
                     context,
@@ -60,6 +67,12 @@ fun HomeScreen() {
                     "Prayer alarms scheduled successfully"
                 } else {
                     "Please enable exact alarm permission"
+                }
+
+                hijriDate = try {
+                    PrayerRepository.getTodayHijriDate()
+                } catch (e: Exception) {
+                    null
                 }
 
             } catch (e: Exception) {
@@ -92,7 +105,8 @@ fun HomeScreen() {
     )
 
     LaunchedEffect(Unit) {
-        try {prayers = PrayerRepository.getTodayPrayerTimes()
+        try {
+            prayers = PrayerRepository.getTodayPrayerTimes()
 
             val scheduled = PrayerAlarmPlanner.scheduleToday(
                 context,
@@ -104,6 +118,13 @@ fun HomeScreen() {
             } else {
                 "Please enable exact alarm permission"
             }
+
+            hijriDate = try {
+                PrayerRepository.getTodayHijriDate()
+            } catch (e: Exception) {
+                null
+            }
+
         } catch (e: Exception) {
             error = e.message ?: "Something went wrong"
         } finally {
@@ -121,22 +142,25 @@ fun HomeScreen() {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            IconButton(
+                onClick = onOpenSettings
+            ) {
+                Text("⚙", style = MaterialTheme.typography.titleLarge)
+            }
+
             Text(
-                "Prayer Times",
-                style = MaterialTheme.typography.headlineMedium
+                text = "Prayer Times",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.weight(1f)
             )
 
             IconButton(
                 onClick = { refreshPrayerTimes() },
                 enabled = !loading
             ) {
-                Text(
-                    text = "↻",
-                    style = MaterialTheme.typography.headlineLarge
-                )
+                Text("↻", style = MaterialTheme.typography.headlineLarge)
             }
         }
         Button(
@@ -147,10 +171,20 @@ fun HomeScreen() {
         ) {
             Text("Test Notification")
         }
-        Text(
-            text = alarmStatus,
-            style = MaterialTheme.typography.bodyMedium
-        )
+        //removing the notify test button
+        hijriDate?.let { hijri ->
+
+            Text(
+                text = "${hijri.day} ${hijri.monthArabic} ${hijri.year} هـ",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = "${hijri.day} ${hijri.monthEnglish} ${hijri.year} AH",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
         if (!AlarmPermissionHelper.canSchedule(context)) {
             Button(
                 onClick = {

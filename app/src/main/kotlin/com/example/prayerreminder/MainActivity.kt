@@ -10,6 +10,8 @@ import com.example.prayerreminder.alarm.NotificationHelper
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.compose.runtime.*
+import com.example.prayerreminder.ui.SettingsScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -28,9 +30,19 @@ class MainActivity : ComponentActivity() {
 }
 
         setContent {
-            MaterialTheme {
-                HomeScreen()
-            }
+    MaterialTheme {
+        var showSettings by remember { mutableStateOf(false) }
+
+        if (showSettings) {
+            SettingsScreen(
+                onBack = { showSettings = false }
+            )
+        } else {
+            HomeScreen(
+                onOpenSettings = { showSettings = true }
+            )
         }
+    }
+}
     }
 }
