@@ -51,5 +51,21 @@ object NotificationHelper {
 
         manager.notify(1001, notification)
     }
+    fun showPrayerNotification(
+        context: Context,
+        prayerName: String
+    ) {
+        val manager = context.getSystemService(
+            Context.NOTIFICATION_SERVICE
+        ) as NotificationManager
 
+        val notification = Notification.Builder(context, CHANNEL_ID)
+        .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+        .setContentTitle("$prayerName Prayer Time")
+        .setContentText("It's time for $prayerName prayer.")
+        .setAutoCancel(true)
+        .build()
+
+        manager.notify(prayerName.hashCode(), notification)
+    }
 }

@@ -16,6 +16,8 @@ import androidx.compose.material3.IconButton
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
 import com.example.prayerreminder.alarm.NotificationHelper
+import com.example.prayerreminder.alarm.PrayerAlarmPlanner
+import com.example.prayerreminder.alarm.AlarmPermissionHelper
 
 @Composable
 fun HomeScreen() {
@@ -38,14 +40,28 @@ fun HomeScreen() {
     val refreshScope = rememberCoroutineScope()
 
     val context = LocalContext.current
+    var alarmStatus by remember {
+        mutableStateOf("Alarms not scheduled yet")
+    }
 
     fun refreshPrayerTimes() {
         refreshScope.launch {
             loading = true
             error = null
 
-            try {
-                prayers = PrayerRepository.getTodayPrayerTimes()
+            try {prayers = PrayerRepository.getTodayPrayerTimes()
+
+                val scheduled = PrayerAlarmPlanner.scheduleToday(
+                    context,
+                    prayers
+                )
+
+                alarmStatus = if (scheduled) {
+                    "Prayer alarms scheduled successfully"
+                } else {
+                    "Please enable exact alarm permission"
+                }
+
             } catch (e: Exception) {
                 error = e.message ?: "Something went wrong"
             } finally {
@@ -76,8 +92,18 @@ fun HomeScreen() {
     )
 
     LaunchedEffect(Unit) {
-        try {
-            prayers = PrayerRepository.getTodayPrayerTimes()
+        try {prayers = PrayerRepository.getTodayPrayerTimes()
+
+            val scheduled = PrayerAlarmPlanner.scheduleToday(
+                context,
+                prayers
+            )
+
+            alarmStatus = if (scheduled) {
+                "Prayer alarms scheduled successfully"
+            } else {
+                "Please enable exact alarm permission"
+            }
         } catch (e: Exception) {
             error = e.message ?: "Something went wrong"
         } finally {
@@ -120,6 +146,20 @@ fun HomeScreen() {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Test Notification")
+        }
+        Text(
+            text = alarmStatus,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        if (!AlarmPermissionHelper.canSchedule(context)) {
+            Button(
+                onClick = {
+                    AlarmPermissionHelper.openSettings(context)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Enable Exact Alarm Permission")
+            }
         }
 
         if (loading) {

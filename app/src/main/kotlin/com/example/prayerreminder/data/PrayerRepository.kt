@@ -21,7 +21,7 @@ object PrayerRepository {
             ).format(Date())
 
             val url = URL(
-                "https://api.aladhan.com/v1/timingsByCity/$date?city=Baghdad&country=Iraq"
+                "https://api.aladhan.com/v1/timingsByCity/$date?city=Baghdad&country=Iraq&method=0"
             )
 
             val connection =
