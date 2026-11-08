@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.prayerreminder.data.SoundSettings
 import com.example.prayerreminder.alarm.NotificationHelper
+import com.example.prayerreminder.audio.AdhanPlaybackService
 
 @Composable
 fun SettingsScreen(
@@ -126,7 +127,11 @@ fun SettingsScreen(
 
         Button(
             onClick = {
-                NotificationHelper.showTestNotification(context)
+                if (selectedSound == SoundSettings.FULL_ADHAN) {
+    AdhanPlaybackService.start(context)
+} else {
+    NotificationHelper.showTestNotification(context)
+}
             },
             modifier = Modifier.fillMaxWidth()
         ) {

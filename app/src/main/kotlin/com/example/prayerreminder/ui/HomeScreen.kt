@@ -19,6 +19,8 @@ import com.example.prayerreminder.alarm.NotificationHelper
 import com.example.prayerreminder.alarm.PrayerAlarmPlanner
 import com.example.prayerreminder.alarm.AlarmPermissionHelper
 import com.example.prayerreminder.domain.HijriDate
+import com.example.prayerreminder.audio.AdhanPlaybackService
+import com.example.prayerreminder.data.SoundSettings
 
 @Composable
 fun HomeScreen(
@@ -163,14 +165,22 @@ fun HomeScreen(
                 Text("↻", style = MaterialTheme.typography.headlineLarge)
             }
         }
-        Button(
+       /* Button(
             onClick = {
-                NotificationHelper.showTestNotification(context)
+                when (SoundSettings.getSound(context)) {
+                    SoundSettings.FULL_ADHAN -> {
+                        AdhanPlaybackService.start(context)
+                    }
+
+                    else -> {
+                        NotificationHelper.showTestNotification(context)
+                    }
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Test Notification")
-        }
+        }*/
         //removing the notify test button
         hijriDate?.let { hijri ->
 
